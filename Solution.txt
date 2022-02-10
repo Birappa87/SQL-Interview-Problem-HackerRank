@@ -1,0 +1,46 @@
+-- CTE for Submission_Stat
+with submissions as (
+    select clg.contest_id as contest_id
+        , sum(sub.total_submissions) as total_submissions
+        , sum(sub.total_accepted_submissions) as total_accepted
+    from Colleges as clg
+    inner join 
+        Challenges as cha  ON clg.college_id = cha.college_id
+    inner join 
+        Submission_Stats as sub ON cha.challenge_id = sub.challenge_id
+    group by 
+        clg.contest_id
+    ) ,
+-- Query for View_Stat
+views_stat as (
+    select clg.contest_id as contest_id
+        , sum(stat.total_views) as total_views
+        , sum(stat.total_unique_views) as total_unique_views
+    from Colleges clg
+    inner join 
+        Challenges as cha  ON clg.college_id = cha.college_id
+    inner join 
+        View_Stats as stat ON cha.challenge_id = stat.challenge_id
+    group by 
+        clg.contest_id
+    )
+    
+-- Main Query
+select cont.contest_id
+    , cont.hacker_id
+    , cont.name
+    , sub.total_submissions
+    , sub.total_accepted
+    , vs.total_views
+    , vs.total_unique_views
+from Contests  cont
+INNER JOIN 
+    submissions sub ON cont.contest_id = sub.contest_id
+INNER JOIN 
+     views_stat vs ON cont.contest_id = vs.contest_id
+WHERE  sub.total_submissions !=0
+    OR sub.total_accepted !=0
+    OR vs.total_views !=0
+    OR vs.total_unique_views !=0
+order by cont.contest_id
+;
